@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace VehicleServe.Models
+namespace VehicleServe.DTOs
 {
-    public class Service
+    public class ServiceDto
     {
-        public int Id { get; set; }
         [MaxLength(100)]
         [Required]
         public string Name { get; set; } = string.Empty;
-        [Required]  
-        [StringLength(500)]  
+        [Required]
+        [StringLength(500)]
         public string Description { get; set; } = string.Empty;
-        public List<Provider>Providers{ get; set; } = new List<Provider>();
     }
 }

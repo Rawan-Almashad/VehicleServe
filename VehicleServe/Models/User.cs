@@ -1,8 +1,11 @@
-﻿namespace VehicleServe.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VehicleServe.Models
 {
     public class User
     {
-       public int Id { get; set; }  
+       public int Id { get; set; }
+        [MaxLength(50)]
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
