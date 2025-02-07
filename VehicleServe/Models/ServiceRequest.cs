@@ -11,9 +11,9 @@ namespace VehicleServe.Models
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
         public DateTime DateRequested { get; set; }
-        public int CustomerId {  get; set; }
+        public string CustomerId {  get; set; }
         public Customer Customer { get; set; }
         public Provider Provider { get; set; }  
-        public int ProviderId {  get; set; }    
+        public string ProviderId {  get; set; }    
     }
 }
