@@ -174,13 +174,15 @@ namespace VehicleServe.Migrations
                 name: "Customers",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Latitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Longitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Customers", x => x.UserId);
+                    table.PrimaryKey("PK_Customers", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Customers_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -193,6 +195,8 @@ namespace VehicleServe.Migrations
                 name: "Providers",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Latitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Longitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -200,7 +204,7 @@ namespace VehicleServe.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Providers", x => x.UserId);
+                    table.PrimaryKey("PK_Providers", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Providers_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -225,7 +229,7 @@ namespace VehicleServe.Migrations
                     Year = table.Column<int>(type: "int", nullable: false),
                     Make = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LicensePlate = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    CustomerId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -234,7 +238,7 @@ namespace VehicleServe.Migrations
                         name: "FK_Vehicles_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -249,8 +253,8 @@ namespace VehicleServe.Migrations
                     Latitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Longitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DateRequested = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    ProviderId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -259,13 +263,13 @@ namespace VehicleServe.Migrations
                         name: "FK_ServiceRequests_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
-                        principalColumn: "UserId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ServiceRequests_Providers_ProviderId",
                         column: x => x.ProviderId,
                         principalTable: "Providers",
-                        principalColumn: "UserId");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -308,9 +312,21 @@ namespace VehicleServe.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Customers_UserId",
+                table: "Customers",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Providers_ServiceId",
                 table: "Providers",
                 column: "ServiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Providers_UserId",
+                table: "Providers",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ServiceRequests_CustomerId",

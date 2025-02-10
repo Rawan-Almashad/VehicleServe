@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using VehicleServe.Models;
 namespace VehicleServe.Data
 {
-    public class AppDbContext: IdentityDbContext<User>
+    public class AppDbContext: IdentityDbContext<IdentityUser>
     {
         public DbSet<Customer> Customers { get; set; } 
         public DbSet<Service> Services { get; set; }
@@ -12,23 +13,25 @@ namespace VehicleServe.Data
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<Vehicle>Vehicles { get; set; }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options)  : base(options)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Customer>()
-            .HasOne(x => x.User).WithOne(x => x.Customer).
-            HasForeignKey<Customer>(x=>x.UserId);
+            .HasOne(c => c.User)
+            .WithOne()
+            .HasForeignKey<Customer>(c => c.UserId) // 1-to-1 Relationship
+            .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Provider>()
-              .HasOne(x => x.User).WithOne(x => x.Provider).
-              HasForeignKey<Provider>(x => x.UserId);
+            .HasOne(c => c.User)
+            .WithOne()
+            .HasForeignKey<Provider>(c => c.UserId) 
+            .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
-           
 
             modelBuilder.Entity<Provider>().HasOne(x=>x.Service)
                 .WithMany(x=>x.Providers).HasForeignKey(x=>x.ServiceId);
