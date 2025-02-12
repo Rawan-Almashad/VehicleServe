@@ -31,8 +31,10 @@ namespace VehicleServe.Controllers
         public async Task<IActionResult> RegisterCustomer([FromBody] RegisterDto model)
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
-            if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
+            var emailExists = await _userManager.FindByEmailAsync(model.Email);
+
+            if (userExists != null || emailExists != null)
+                return BadRequest(new { Status = "Error", Message = "Username or Email already exists!" });
 
             IdentityUser user = new()
             {
@@ -44,7 +46,10 @@ namespace VehicleServe.Controllers
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed!" });
+            {
+                    var errors = result.Errors.Select(e => e.Description).ToList(); // Extract error messages
+                    return BadRequest(new { Status = "Error", Message = "User creation failed!", Errors = errors });   
+            }
 
             await _userManager.AddToRoleAsync(user, "Customer");
             Customer customer = new Customer { UserId = user.Id, User = user };

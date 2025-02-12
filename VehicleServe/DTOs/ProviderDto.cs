@@ -2,7 +2,7 @@
 
 namespace VehicleServe.DTOs
 {
-    public class RegisterProbiderDto
+    public class ProviderDto
     {
         [Required]
         public string Username { get; set; }
@@ -13,9 +13,12 @@ namespace VehicleServe.DTOs
         = string.Empty;
         [Required]
         public string PhoneNumber { get; set; }
-        = string.Empty;
 
         [Required]
-        public int ServiceId { get; set; }
+        public int ServiceId {  get; set; }
+        [Required]
+        public decimal Latitude { get; set; }
+        [Required]
+        public decimal Longitude { get; set; }
     }
 }

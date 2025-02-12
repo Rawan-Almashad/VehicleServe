@@ -12,7 +12,7 @@ using VehicleServe.Data;
 namespace VehicleServe.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250210120035_InitialCreate")]
+    [Migration("20250211160045_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -257,6 +257,9 @@ namespace VehicleServe.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("Latitude")
                         .HasColumnType("decimal(18,2)");
 
@@ -278,6 +281,41 @@ namespace VehicleServe.Migrations
                         .IsUnique();
 
                     b.ToTable("Providers");
+                });
+
+            modelBuilder.Entity("VehicleServe.Models.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProviderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceRequestId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceRequestId")
+                        .IsUnique();
+
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("VehicleServe.Models.Service", b =>
@@ -328,6 +366,9 @@ namespace VehicleServe.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProviderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReviewId")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
@@ -434,7 +475,7 @@ namespace VehicleServe.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithOne()
                         .HasForeignKey("VehicleServe.Models.Customer", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -451,12 +492,23 @@ namespace VehicleServe.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithOne()
                         .HasForeignKey("VehicleServe.Models.Provider", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Service");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VehicleServe.Models.Review", b =>
+                {
+                    b.HasOne("VehicleServe.Models.ServiceRequest", "ServiceRequest")
+                        .WithOne("Review")
+                        .HasForeignKey("VehicleServe.Models.Review", "ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServiceRequest");
                 });
 
             modelBuilder.Entity("VehicleServe.Models.ServiceRequest", b =>
@@ -504,6 +556,12 @@ namespace VehicleServe.Migrations
             modelBuilder.Entity("VehicleServe.Models.Service", b =>
                 {
                     b.Navigation("Providers");
+                });
+
+            modelBuilder.Entity("VehicleServe.Models.ServiceRequest", b =>
+                {
+                    b.Navigation("Review")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

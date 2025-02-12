@@ -18,11 +18,16 @@ namespace VehicleServe.Controllers
         {
             _appDbContext = appDbContext;
         }
-        [Authorize(Roles ="Customer")]
         [HttpGet]
         public async Task<IActionResult>GetServices()
         {
-            var services=await _appDbContext.Services.ToListAsync();
+            var services = await _appDbContext.Services
+       .Select(s => new GetServiceDto { 
+           Id = s.Id,
+           Name = s.Name,
+           Description = s.Description
+       })
+       .ToListAsync();
             if (services == null || services.Count == 0)
             {
                 return NoContent();
@@ -37,7 +42,8 @@ namespace VehicleServe.Controllers
             {
                 return NotFound($"Service with ID {id} is not found.");
             }
-            return Ok(service);
+            var serviceDto= new GetServiceDto { Id =service.Id,Name=service.Name,Description=service.Description};   
+            return Ok(serviceDto);
         }
         [HttpPost]
         public async Task<IActionResult> CreateService([FromBody] ServiceDto serviceDto)

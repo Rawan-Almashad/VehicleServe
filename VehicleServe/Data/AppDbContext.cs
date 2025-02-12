@@ -12,6 +12,7 @@ namespace VehicleServe.Data
         public DbSet<Provider> Providers { get; set; }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<Vehicle>Vehicles { get; set; }
+        public DbSet<Review> Reviews { get; set; }  
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -24,14 +25,18 @@ namespace VehicleServe.Data
             .HasOne(c => c.User)
             .WithOne()
             .HasForeignKey<Customer>(c => c.UserId) // 1-to-1 Relationship
-            .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            .IsRequired().OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Provider>()
             .HasOne(c => c.User)
             .WithOne()
             .HasForeignKey<Provider>(c => c.UserId) 
-            .IsRequired().OnDelete(DeleteBehavior.Cascade);
+            .IsRequired().OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<Review>().HasOne(x=>x.ServiceRequest).WithOne(x=>x.Review)
+                .HasForeignKey<Review>(x => x.ServiceRequestId).OnDelete(DeleteBehavior.Restrict );
 
+ 
 
             modelBuilder.Entity<Provider>().HasOne(x=>x.Service)
                 .WithMany(x=>x.Providers).HasForeignKey(x=>x.ServiceId);

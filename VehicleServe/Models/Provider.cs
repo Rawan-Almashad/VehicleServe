@@ -8,12 +8,13 @@ namespace VehicleServe.Models
         [Key]
         public int Id { get; set; }
         public string UserId { get; set; }
-        bool IsAvailable { get; set; }
+        public bool IsAvailable { get; set; }
         public decimal Latitude { get; set; }
         public decimal Longitude { get; set; }
         public int  ServiceId { get; set; }
         public Service Service  { get; set; }
         public IdentityUser User { get; set; }
         public List<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
+        
     }
 }

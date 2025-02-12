@@ -14,6 +14,9 @@ namespace VehicleServe.Models
         public int CustomerId {  get; set; }
         public Customer Customer { get; set; }
         public Provider Provider { get; set; }  
-        public int ProviderId {  get; set; }    
+        public int ProviderId {  get; set; }   
+        public Review Review { get; set; } 
+        public int ReviewId { get; set; }
+
     }
 }
