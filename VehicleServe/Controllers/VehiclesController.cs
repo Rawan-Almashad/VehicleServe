@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -110,6 +111,28 @@ namespace VehicleServe.Controllers
             await _appDbContext.SaveChangesAsync();
             return NoContent();
         }
+        [HttpGet("customer/{customerId}")]
+        [Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> GetCustomerVehicles(int customerId)
+        {
+            var vehicles = await _appDbContext.Vehicles
+                .Where(v => v.CustomerId == customerId)
+                .Select(v => new GetVehivleDto
+                {
+                    Id = v.Id,
+                    LicensePlate = v.LicensePlate,
+                    Make = v.Make,
+                    Year = v.Year,
+                    Model = v.Model
+                })
+                .ToListAsync();
+
+            if (!vehicles.Any())
+                return NotFound("No vehicles found for this customer.");
+
+            return Ok(vehicles);
+        }
+
 
 
     }

@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using VehicleServe.Data;
 using VehicleServe.DTOs;
 using VehicleServe.Models;
@@ -19,6 +21,30 @@ namespace VehicleServe.Controllers
             _appDbContext = appDbContext;
             _userManager = userManager;
         }
+        [HttpGet("me")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> GetProviderProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var provider = await _appDbContext.Providers
+                .Include(p => p.User)
+                .Where(p => p.UserId == userId)
+                .Select(p => new
+                {
+                    p.User.UserName,
+                    p.User.Email,
+                    p.Latitude,
+                    p.Longitude,
+                    p.ServiceId
+                })
+                .SingleOrDefaultAsync();
+
+            if (provider == null)
+                return NotFound("Provider profile not found.");
+
+            return Ok(provider);
+        }
+
         [HttpGet]
         public async Task<IActionResult>GetProviders()
         {
@@ -131,6 +157,8 @@ namespace VehicleServe.Controllers
             if (user != null)
             {
                 user.PhoneNumber = model.PhoneNumber;
+                user.UserName=model.Username;
+                user.Email = model.Email;   
                 var identityUpdateResult = await _userManager.UpdateAsync(user);
 
                 if (!identityUpdateResult.Succeeded)
@@ -142,6 +170,55 @@ namespace VehicleServe.Controllers
             await _appDbContext.SaveChangesAsync();
             return Ok(new { message = "Provider updated successfully", provider });
         }
+        [HttpPut("me/location")]
+        [Authorize(Roles = "Provider")]
+        public async Task<IActionResult> UpdateLocation([FromBody] LocatioDto updateDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var provider = await _appDbContext.Providers.SingleOrDefaultAsync(c => c.UserId == userId);
+
+            if (provider == null)
+                return NotFound("Provider not found.");
+
+            provider.Latitude = updateDto.Latitude;
+            provider.Longitude = updateDto.Longitude;
+
+            await _appDbContext.SaveChangesAsync();
+            return NoContent();
+        }
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteProvider(int id)
+        {
+            var provider = await _appDbContext.Providers
+                .Include(p => p.User) 
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (provider == null)
+                return NotFound("Provider not found.");
+
+            
+            if (provider.User != null)
+            {
+                var identityResult = await _userManager.DeleteAsync(provider.User);
+                if (!identityResult.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Failed to delete associated user.",
+                        errors = identityResult.Errors.Select(e => e.Description)
+                    });
+                }
+            }
+
+            // Remove provider only if user deletion was successful
+            _appDbContext.Providers.Remove(provider);
+            await _appDbContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
 
 
     }
