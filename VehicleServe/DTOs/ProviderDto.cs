@@ -13,12 +13,15 @@ namespace VehicleServe.DTOs
         = string.Empty;
         [Required]
         public string PhoneNumber { get; set; }
+     
+        [Required]
+        public string NationalId { get; set; }
+        [Required]
+        public string Make { get; set; }
+        [Required]
+        public string LicensePlate { get; set; } = string.Empty;
+        [Required]
+        public string Model { get; set; }
 
-        [Required]
-        public int ServiceId {  get; set; }
-        [Required]
-        public decimal Latitude { get; set; }
-        [Required]
-        public decimal Longitude { get; set; }
     }
 }
