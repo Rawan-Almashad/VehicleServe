@@ -28,7 +28,7 @@ namespace VehicleServe.Controllers
 
             var customer = await _appDbContext.Customers
                 .Include(c => c.User)
-                .Where(c => c.UserId == userId)
+                .Where(c => c.Id == userId)
                 .Select(c => new GetCustomerDto
                 {
                     Username = c.User.UserName,
@@ -46,7 +46,7 @@ namespace VehicleServe.Controllers
         }
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetCustomerById(int id)
+        public async Task<IActionResult> GetCustomerById(string id)
         {
 
             var customer = await _appDbContext.Customers
@@ -72,7 +72,7 @@ namespace VehicleServe.Controllers
         public async Task<IActionResult> UpdateLocation([FromBody] LocatioDto updateDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var customer = await _appDbContext.Customers.SingleOrDefaultAsync(c => c.UserId == userId);
+            var customer = await _appDbContext.Customers.SingleOrDefaultAsync(c => c.Id == userId);
 
             if (customer == null)
                 return NotFound("Customer not found.");
@@ -103,32 +103,43 @@ namespace VehicleServe.Controllers
         }
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteCustomer(int id)
+        public async Task<IActionResult> DeleteCustomer(string id)
         {
+            // Find the customer
             var customer = await _appDbContext.Customers
+                .Include(c => c.ServiceRequests)
+                .Include(c => c.Vehicles)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (customer == null)
-                return NotFound("Customer not found.");
-
-            var user = await _userManager.FindByIdAsync(customer.UserId);
-            if (user != null)
             {
-                var identityResult = await _userManager.DeleteAsync(user);
-                if (!identityResult.Succeeded)
-                {
-                    return BadRequest(new
-                    {
-                        message = "Failed to delete associated user.",
-                        errors = identityResult.Errors.Select(e => e.Description)
-                    });
-                }
+                return NotFound(new { message = "Customer not found." });
             }
 
-            _appDbContext.Customers.Remove(customer);
-            await _appDbContext.SaveChangesAsync();
+           
+            if (customer.ServiceRequests.Any() || customer.Vehicles.Any())
+            {
+                return BadRequest(new { message = "Customer cannot be deleted because they have related data (service requests or vehicles)." });
+            }
 
-            return NoContent();
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            // Remove customer from database
+            _appDbContext.Customers.Remove(customer);
+            await _appDbContext.SaveChangesAsync(); 
+
+            // Delete the user from ASP.NET Identity
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { message = "Failed to delete user." });
+            }
+
+            return NoContent(); 
         }
         [HttpPut("me")]
         [Authorize(Roles = "Customer")]
@@ -138,7 +149,7 @@ namespace VehicleServe.Controllers
 
             var customer = await _appDbContext.Customers
                 .Include(c => c.User)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.Id == userId);
 
             if (customer == null)
                 return NotFound(new { message = "Customer profile not found." });

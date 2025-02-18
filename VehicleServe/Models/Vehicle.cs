@@ -12,7 +12,7 @@ namespace VehicleServe.Models
         public string Make { get; set; }
         [Required]
         public string LicensePlate { get; set; } = string.Empty;    
-        public int CustomerId { get; set; }
+        public string CustomerId { get; set; }
         public Customer Customer { get; set; }
     }
 }

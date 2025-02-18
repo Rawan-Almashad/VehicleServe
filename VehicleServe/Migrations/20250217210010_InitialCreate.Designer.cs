@@ -12,7 +12,7 @@ using VehicleServe.Data;
 namespace VehicleServe.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250211160045_InitialCreate")]
+    [Migration("20250217210010_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -225,11 +225,8 @@ namespace VehicleServe.Migrations
 
             modelBuilder.Entity("VehicleServe.Models.Customer", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Latitude")
                         .HasColumnType("decimal(18,2)");
@@ -237,25 +234,15 @@ namespace VehicleServe.Migrations
                     b.Property<decimal>("Longitude")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("VehicleServe.Models.Provider", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
@@ -263,24 +250,43 @@ namespace VehicleServe.Migrations
                     b.Property<decimal>("Latitude")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("LicensePlate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Longitude")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Make")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NationalId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Providers");
+                });
+
+            modelBuilder.Entity("VehicleServe.Models.ProviderService", b =>
+                {
+                    b.Property<string>("ProviderId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
+                    b.HasKey("ProviderId", "ServiceId");
 
                     b.HasIndex("ServiceId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Providers");
+                    b.ToTable("ProviderServices");
                 });
 
             modelBuilder.Entity("VehicleServe.Models.Review", b =>
@@ -298,11 +304,13 @@ namespace VehicleServe.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("ProviderId")
-                        .HasColumnType("int");
+                    b.Property<string>("ProviderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Rating")
                         .HasColumnType("int");
@@ -310,10 +318,21 @@ namespace VehicleServe.Migrations
                     b.Property<int>("ServiceRequestId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ServiceRequestId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ProviderId");
 
                     b.HasIndex("ServiceRequestId")
                         .IsUnique();
+
+                    b.HasIndex("ServiceRequestId1")
+                        .IsUnique()
+                        .HasFilter("[ServiceRequestId1] IS NOT NULL");
 
                     b.ToTable("Reviews");
                 });
@@ -349,8 +368,9 @@ namespace VehicleServe.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateRequested")
                         .HasColumnType("datetime2");
@@ -365,11 +385,9 @@ namespace VehicleServe.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProviderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReviewId")
-                        .HasColumnType("int");
+                    b.Property<string>("ProviderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -392,8 +410,9 @@ namespace VehicleServe.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LicensePlate")
                         .IsRequired()
@@ -474,7 +493,7 @@ namespace VehicleServe.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithOne()
-                        .HasForeignKey("VehicleServe.Models.Customer", "UserId")
+                        .HasForeignKey("VehicleServe.Models.Customer", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -483,30 +502,61 @@ namespace VehicleServe.Migrations
 
             modelBuilder.Entity("VehicleServe.Models.Provider", b =>
                 {
-                    b.HasOne("VehicleServe.Models.Service", "Service")
-                        .WithMany("Providers")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithOne()
-                        .HasForeignKey("VehicleServe.Models.Provider", "UserId")
+                        .HasForeignKey("VehicleServe.Models.Provider", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Service");
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("VehicleServe.Models.ProviderService", b =>
+                {
+                    b.HasOne("VehicleServe.Models.Provider", "Provider")
+                        .WithMany("ProviderServices")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VehicleServe.Models.Service", "Service")
+                        .WithMany("ProviderServices")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Provider");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("VehicleServe.Models.Review", b =>
                 {
+                    b.HasOne("VehicleServe.Models.Customer", "Customer")
+                        .WithMany("Reviews")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VehicleServe.Models.Provider", "Provider")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("VehicleServe.Models.ServiceRequest", "ServiceRequest")
-                        .WithOne("Review")
+                        .WithOne()
                         .HasForeignKey("VehicleServe.Models.Review", "ServiceRequestId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("VehicleServe.Models.ServiceRequest", null)
+                        .WithOne("Review")
+                        .HasForeignKey("VehicleServe.Models.Review", "ServiceRequestId1");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Provider");
 
                     b.Navigation("ServiceRequest");
                 });
@@ -543,6 +593,8 @@ namespace VehicleServe.Migrations
 
             modelBuilder.Entity("VehicleServe.Models.Customer", b =>
                 {
+                    b.Navigation("Reviews");
+
                     b.Navigation("ServiceRequests");
 
                     b.Navigation("Vehicles");
@@ -550,12 +602,16 @@ namespace VehicleServe.Migrations
 
             modelBuilder.Entity("VehicleServe.Models.Provider", b =>
                 {
+                    b.Navigation("ProviderServices");
+
+                    b.Navigation("Reviews");
+
                     b.Navigation("ServiceRequests");
                 });
 
             modelBuilder.Entity("VehicleServe.Models.Service", b =>
                 {
-                    b.Navigation("Providers");
+                    b.Navigation("ProviderServices");
                 });
 
             modelBuilder.Entity("VehicleServe.Models.ServiceRequest", b =>

@@ -11,6 +11,6 @@ namespace VehicleServe.Models
         [Required]  
         [StringLength(500)]  
         public string Description { get; set; } = string.Empty;
-        public List<Provider>Providers{ get; set; } = new List<Provider>();
+        public List<ProviderService> ProviderServices { get; set; }
     }
 }

@@ -52,7 +52,7 @@ namespace VehicleServe.Controllers
             }
 
             await _userManager.AddToRoleAsync(user, "Customer");
-            Customer customer = new Customer { UserId = user.Id, User = user };
+            Customer customer = new Customer { Id = user.Id, User = user };
             _appDbContext.Customers.Add(customer);
             await _appDbContext.SaveChangesAsync();
 

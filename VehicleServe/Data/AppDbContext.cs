@@ -8,7 +8,7 @@ namespace VehicleServe.Data
     {
         public DbSet<Customer> Customers { get; set; } 
         public DbSet<Service> Services { get; set; }
-        
+        public DbSet<ProviderService> ProviderServices { get; set; }
         public DbSet<Provider> Providers { get; set; }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<Vehicle>Vehicles { get; set; }
@@ -22,24 +22,41 @@ namespace VehicleServe.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Customer>()
-            .HasOne(c => c.User)
-            .WithOne()
-            .HasForeignKey<Customer>(c => c.UserId) // 1-to-1 Relationship
-            .IsRequired().OnDelete(DeleteBehavior.Restrict);
+               .HasOne(c => c.User) 
+               .WithOne()           
+               .HasForeignKey<Customer>(c => c.Id) 
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure Provider-IdentityUser Relationship
             modelBuilder.Entity<Provider>()
-            .HasOne(c => c.User)
-            .WithOne()
-            .HasForeignKey<Provider>(c => c.UserId) 
-            .IsRequired().OnDelete(DeleteBehavior.Restrict);
-            
-            modelBuilder.Entity<Review>().HasOne(x=>x.ServiceRequest).WithOne(x=>x.Review)
-                .HasForeignKey<Review>(x => x.ServiceRequestId).OnDelete(DeleteBehavior.Restrict );
+                .HasOne(p => p.User) 
+                .WithOne()           
+                .HasForeignKey<Provider>(p => p.Id) 
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
 
- 
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.ServiceRequest) 
+                .WithOne() 
+                .HasForeignKey<Review>(r => r.ServiceRequestId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Provider>().HasOne(x=>x.Service)
-                .WithMany(x=>x.Providers).HasForeignKey(x=>x.ServiceId);
+            modelBuilder.Entity<ProviderService>()
+                   .HasKey(ps => new { ps.ProviderId, ps.ServiceId }); // Composite primary key
+
+            modelBuilder.Entity<ProviderService>()
+                .HasOne(ps => ps.Provider)
+                .WithMany(p => p.ProviderServices)
+                .HasForeignKey(ps => ps.ProviderId);
+
+            modelBuilder.Entity<ProviderService>()
+                .HasOne(ps => ps.Service)
+                .WithMany(s => s.ProviderServices)
+                .HasForeignKey(ps => ps.ServiceId);
+
+
 
             modelBuilder.Entity<Customer>().HasMany(x => x.Vehicles)
                 .WithOne(x => x.Customer).HasForeignKey(x => x.CustomerId);
@@ -49,7 +66,20 @@ namespace VehicleServe.Data
 
             modelBuilder.Entity<Provider>().HasMany(x => x.ServiceRequests)
                 .WithOne(x => x.Provider).HasForeignKey(x => x.ProviderId)
-                .OnDelete(DeleteBehavior.NoAction); 
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Review>()
+      .HasOne(r => r.Customer)
+      .WithMany(c => c.Reviews)
+      .HasForeignKey(r => r.CustomerId)
+      .OnDelete(DeleteBehavior.Restrict); 
+
+            
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Provider)
+                .WithMany(p => p.Reviews)
+                .HasForeignKey(r => r.ProviderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

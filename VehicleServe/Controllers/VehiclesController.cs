@@ -25,7 +25,7 @@ namespace VehicleServe.Controllers
         public async Task<IActionResult> GetCustomerVehicles()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var vehicles = await _appDbContext.Vehicles.Where(v=>v.Customer.UserId == userId)
+            var vehicles = await _appDbContext.Vehicles.Where(v=>v.Customer.Id == userId)
                 .Select(v => new GetVehivleDto
             {
                 Id = v.Id,
@@ -42,7 +42,7 @@ namespace VehicleServe.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var vehicleDto = await _appDbContext.Vehicles
-        .Where(v => v.Id == id && v.Customer.UserId == userId)
+        .Where(v => v.Id == id && v.Customer.Id == userId)
         .Select(v => new GetVehivleDto
         {
             Id=v.Id,
@@ -61,7 +61,7 @@ namespace VehicleServe.Controllers
         public async Task<IActionResult> AddVehicle([FromBody] AddVehicle vehicle)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var customer=await _appDbContext.Customers.Where(x=>x.UserId==userId).SingleOrDefaultAsync();
+            var customer=await _appDbContext.Customers.Where(x=>x.Id==userId).SingleOrDefaultAsync();
             if (customer == null)
                 return Unauthorized();
             var newvehicle = new Vehicle
@@ -83,7 +83,7 @@ namespace VehicleServe.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var vehicle = await _appDbContext.Vehicles
-    .FirstOrDefaultAsync(v => v.Id == id && v.Customer.UserId == userId);
+    .FirstOrDefaultAsync(v => v.Id == id && v.Customer.Id == userId);
 
             if (vehicle == null)
                 return NotFound("Vehicle not found or you don't have access.");
@@ -102,7 +102,7 @@ namespace VehicleServe.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var vehicle = await _appDbContext.Vehicles
-    .FirstOrDefaultAsync(v => v.Id == id && v.Customer.UserId == userId);
+    .FirstOrDefaultAsync(v => v.Id == id && v.Customer.Id == userId);
 
             if (vehicle == null)
                 return NotFound("Vehicle not found or you don't have access.");
@@ -116,7 +116,7 @@ namespace VehicleServe.Controllers
         public async Task<IActionResult> GetCustomerVehicles(int customerId)
         {
             var vehicles = await _appDbContext.Vehicles
-                .Where(v => v.CustomerId == customerId)
+                .Where(v => v.Id == customerId)
                 .Select(v => new GetVehivleDto
                 {
                     Id = v.Id,
