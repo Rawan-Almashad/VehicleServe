@@ -8,6 +8,7 @@ using System.Security.Claims;
 using VehicleServe.Data;
 using VehicleServe.DTOs;
 using VehicleServe.Models;
+using VehicleServe.Services;
 
 namespace VehicleServe.Controllers
 {
@@ -32,6 +33,7 @@ namespace VehicleServe.Controllers
                 .Where(p => p.Id == userId)
                 .Select(p => new
                 {
+                    p.Id,
                     p.User.UserName,
                     p.User.Email,
                     p.NationalId,
@@ -263,6 +265,31 @@ namespace VehicleServe.Controllers
 
             return Ok(new { Message = "Service removed successfully." });
         }
+
+        [HttpGet("available-providers/{serviceId}")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<IActionResult> GetAvailableProviders(int serviceId)
+        {
+            var onlineProviderIds = OnlineUsersTracker.GetOnlineProviders();
+
+            var availableProviders = await _appDbContext.Providers
+                .Where(p => p.IsAvailable && onlineProviderIds.Contains(p.Id) &&
+                            p.ProviderServices.Any(ps => ps.ServiceId == serviceId)) 
+                .Include(p => p.User)
+                .OrderByDescending(p => p.Rating) 
+                .Select(p => new
+                {
+                    ProviderId = p.Id,
+                    Username = p.User.UserName,
+                    Rating = p.Rating,
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude
+                })
+                .ToListAsync();
+
+            return Ok(availableProviders);
+        }
+
 
     }
 

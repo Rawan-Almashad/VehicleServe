@@ -272,7 +272,8 @@ namespace VehicleServe.Migrations
                     Longitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DateRequested = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    ProviderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ServiceId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -288,6 +289,12 @@ namespace VehicleServe.Migrations
                         column: x => x.ProviderId,
                         principalTable: "Providers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ServiceRequests_Services_ServiceId",
+                        column: x => x.ServiceId,
+                        principalTable: "Services",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -300,7 +307,7 @@ namespace VehicleServe.Migrations
                     ServiceRequestId = table.Column<int>(type: "int", nullable: false),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ServiceRequestId1 = table.Column<int>(type: "int", nullable: true)
                 },
@@ -410,6 +417,11 @@ namespace VehicleServe.Migrations
                 column: "ProviderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ServiceRequests_ServiceId",
+                table: "ServiceRequests",
+                column: "ServiceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Vehicles_CustomerId",
                 table: "Vehicles",
                 column: "CustomerId");
@@ -446,9 +458,6 @@ namespace VehicleServe.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Services");
-
-            migrationBuilder.DropTable(
                 name: "ServiceRequests");
 
             migrationBuilder.DropTable(
@@ -456,6 +465,9 @@ namespace VehicleServe.Migrations
 
             migrationBuilder.DropTable(
                 name: "Providers");
+
+            migrationBuilder.DropTable(
+                name: "Services");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

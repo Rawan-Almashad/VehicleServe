@@ -76,7 +76,7 @@ namespace VehicleServe.Controllers
             };
            _appDbContext.Vehicles.Add(newvehicle);
             await _appDbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetVehicleById), new { id = newvehicle.Id });
+            return Ok("Vehicle Added Successfully");
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVehicle(int id, [FromBody] AddVehicle updatedVehicle)

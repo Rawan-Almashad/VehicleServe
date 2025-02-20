@@ -81,6 +81,12 @@ namespace VehicleServe.Data
                 .HasForeignKey(r => r.ProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<ServiceRequest>()
+        .HasOne(sr => sr.Service) 
+        .WithMany(s => s.ServiceRequests) 
+        .HasForeignKey(sr => sr.ServiceId) 
+        .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

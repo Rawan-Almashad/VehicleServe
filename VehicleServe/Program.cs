@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using VehicleServe.Data;
+using VehicleServe.Hubs;
 
-var builder = WebApplication.CreateBuilder(args);   
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalR();
 
 
 // Add services to the container.
@@ -15,6 +18,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<ProviderHub>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -54,6 +59,10 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+
+app.MapHub<ProviderHub>("/providerHub"); 
+
 
 app.Run();
 

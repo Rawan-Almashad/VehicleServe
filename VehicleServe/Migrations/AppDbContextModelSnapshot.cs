@@ -220,23 +220,7 @@ namespace VehicleServe.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("VehicleServe.Models.Customer", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("Latitude")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Longitude")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("VehicleServe.Models.Provider", b =>
+            modelBuilder.Entity("Provider", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -271,6 +255,22 @@ namespace VehicleServe.Migrations
                     b.ToTable("Providers");
                 });
 
+            modelBuilder.Entity("VehicleServe.Models.Customer", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("VehicleServe.Models.ProviderService", b =>
                 {
                     b.Property<string>("ProviderId")
@@ -295,7 +295,6 @@ namespace VehicleServe.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -386,6 +385,9 @@ namespace VehicleServe.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -395,6 +397,8 @@ namespace VehicleServe.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("ProviderId");
+
+                    b.HasIndex("ServiceId");
 
                     b.ToTable("ServiceRequests");
                 });
@@ -486,6 +490,17 @@ namespace VehicleServe.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Provider", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithOne()
+                        .HasForeignKey("Provider", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("VehicleServe.Models.Customer", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
@@ -497,20 +512,9 @@ namespace VehicleServe.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("VehicleServe.Models.Provider", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithOne()
-                        .HasForeignKey("VehicleServe.Models.Provider", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("VehicleServe.Models.ProviderService", b =>
                 {
-                    b.HasOne("VehicleServe.Models.Provider", "Provider")
+                    b.HasOne("Provider", "Provider")
                         .WithMany("ProviderServices")
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -535,7 +539,7 @@ namespace VehicleServe.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("VehicleServe.Models.Provider", "Provider")
+                    b.HasOne("Provider", "Provider")
                         .WithMany("Reviews")
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -566,15 +570,23 @@ namespace VehicleServe.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VehicleServe.Models.Provider", "Provider")
+                    b.HasOne("Provider", "Provider")
                         .WithMany("ServiceRequests")
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("VehicleServe.Models.Service", "Service")
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Customer");
 
                     b.Navigation("Provider");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("VehicleServe.Models.Vehicle", b =>
@@ -588,6 +600,15 @@ namespace VehicleServe.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("Provider", b =>
+                {
+                    b.Navigation("ProviderServices");
+
+                    b.Navigation("Reviews");
+
+                    b.Navigation("ServiceRequests");
+                });
+
             modelBuilder.Entity("VehicleServe.Models.Customer", b =>
                 {
                     b.Navigation("Reviews");
@@ -597,24 +618,16 @@ namespace VehicleServe.Migrations
                     b.Navigation("Vehicles");
                 });
 
-            modelBuilder.Entity("VehicleServe.Models.Provider", b =>
+            modelBuilder.Entity("VehicleServe.Models.Service", b =>
                 {
                     b.Navigation("ProviderServices");
-
-                    b.Navigation("Reviews");
 
                     b.Navigation("ServiceRequests");
                 });
 
-            modelBuilder.Entity("VehicleServe.Models.Service", b =>
-                {
-                    b.Navigation("ProviderServices");
-                });
-
             modelBuilder.Entity("VehicleServe.Models.ServiceRequest", b =>
                 {
-                    b.Navigation("Review")
-                        .IsRequired();
+                    b.Navigation("Review");
                 });
 #pragma warning restore 612, 618
         }

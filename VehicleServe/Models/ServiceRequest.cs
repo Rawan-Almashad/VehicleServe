@@ -1,4 +1,5 @@
 ﻿using Microsoft.Identity.Client;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VehicleServe.Models
 {
@@ -15,7 +16,9 @@ namespace VehicleServe.Models
         public Customer Customer { get; set; }
         public Provider Provider { get; set; }  
         public string ProviderId {  get; set; }  
-        public Review Review { get; set; }    
+        public Review? Review { get; set; }     
+        public int ServiceId {  get; set; }
+        public Service Service { get; set; }    
 
     }
 }
