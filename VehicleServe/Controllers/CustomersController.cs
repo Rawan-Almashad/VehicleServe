@@ -142,7 +142,7 @@ namespace VehicleServe.Controllers
             return NoContent(); 
         }
         [HttpPut("me")]
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "CUSTOMER")]
         public async Task<IActionResult> UpdateCustomerProfile([FromBody] UpdateCustomerDto model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

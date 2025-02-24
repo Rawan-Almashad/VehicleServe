@@ -58,12 +58,12 @@ namespace VehicleServe.Controllers
                 .AnyAsync(ps => ps.ProviderId == dto.ProviderId && ps.ServiceId == dto.ServiceId);
             if (!serviceOffered)
                 return BadRequest("Provider does not offer this service.");
-            /*
+            
 
             // Check if provider is online
             if (!OnlineUsersTracker.TryGetConnectionId(dto.ProviderId, out var connectionId))
                 return BadRequest("Provider is not online.");
-            */
+            
             // Ensure vehicle exists
             var vehicle = await _appDbContext.Vehicles.FindAsync(dto.VehicleId);
             if (vehicle == null)
@@ -85,7 +85,7 @@ namespace VehicleServe.Controllers
 
             _appDbContext.ServiceRequests.Add(serviceRequest);
             await _appDbContext.SaveChangesAsync();
-            /*
+            
             // Send notification to provider
             await _hubContext.Clients.Client(connectionId)
                 .SendAsync("ReceiveNotification", new
@@ -98,7 +98,7 @@ namespace VehicleServe.Controllers
                     PhoneNumber = user.User.PhoneNumber
 
                 });
-            */
+            
 
             return Ok( "Service request created and notification sent.");
         }

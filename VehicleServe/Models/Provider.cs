@@ -16,7 +16,7 @@ public class Provider
     [Required]
     public string LicensePlate { get; set; } = string.Empty;
 
-    public double Rating => Reviews != null && Reviews.Any() ? Reviews.Average(r => r.Rating) : 0;
+    public double Rating => Reviews != null && Reviews.Any() ? Reviews.Average(r => r.Rating) : 0.0;
 
     [Required]
     public string Model { get; set; }

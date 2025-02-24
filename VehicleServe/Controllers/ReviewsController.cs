@@ -55,6 +55,7 @@ namespace VehicleServe.Controllers
 
             return Ok(new { Message = "Review added successfully." });
         }
+
         [HttpGet("provider/reviews/{providerId}")]
         public async Task<IActionResult> GetProviderReviews(string providerId)
         {
@@ -73,19 +74,20 @@ namespace VehicleServe.Controllers
                     r.Rating,
                     r.Comment,
                     r.CreatedAt,
-                    CustomerName = r.Customer.User.UserName 
+                    CustomerName = r.Customer.User.UserName ,
+                    r.ServiceRequest.Service.Name
                 })
                 .ToListAsync();
 
             return Ok(reviews);
         }
-        [HttpGet("customer/reviews/{providerId}")]
+        [HttpGet("customer/reviews/{CustomerId}")]
         public async Task<IActionResult> GetCustomerReviews(string CustomerId)
         {
             // Ensure the provider exists
             var customerExists = await _appDbContext.Providers.AnyAsync(p => p.Id == CustomerId);
             if (!customerExists)
-                return NotFound("Provider not found.");
+                return NotFound("Customer not found.");
 
             // Get reviews for the provider
             var reviews = await _appDbContext.Reviews
@@ -97,7 +99,8 @@ namespace VehicleServe.Controllers
                     r.Rating,
                     r.Comment,
                     r.CreatedAt,
-                    ProviderName = r.Provider.User.UserName
+                    ProviderName = r.Provider.User.UserName,
+                    r.ServiceRequest.Service.Name
                 })
                 .ToListAsync();
 

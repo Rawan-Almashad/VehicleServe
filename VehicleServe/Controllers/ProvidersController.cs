@@ -24,7 +24,7 @@ namespace VehicleServe.Controllers
             _userManager = userManager;
         }
         [HttpGet("me")]
-        [Authorize(Roles ="PROVIDER")]
+        [Authorize(Roles ="Provider")]
         public async Task<IActionResult> GetProviderProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -50,7 +50,7 @@ namespace VehicleServe.Controllers
 
             return Ok(provider);
         }
-        [Authorize(Roles = "PROVIDER")]
+        [Authorize(Roles = "Provider")]
         [HttpGet("get-my-services")]
         public async Task<IActionResult> GetProviderServices()
         {
@@ -81,30 +81,40 @@ namespace VehicleServe.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProviderById(string id)
         {
-            var provider = await _appDbContext.Providers
-            .Include(p => p.User)
-            .Include(p => p.ProviderServices)
-            .Where(p => p.Id == id) 
-            .Select(p => new GetProviderDto
+            try
             {
-            Username = p.User.UserName,
-            Email = p.User.Email,
-            PhoneNumber = p.User.PhoneNumber,
-              providerServices = p.ProviderServices ,
-                NationalId=p.NationalId,
-                Rating=p.Rating,
-                LicensePlate= p.LicensePlate,
-                Make= p.Make,
-                Model= p.Model,
-                IsAvailable=p.IsAvailable
-            })
-            .FirstOrDefaultAsync();
-            if (provider == null)
-            {
-                return NotFound(new { message = "Provider not found" });
+                var provider = await _appDbContext.Providers
+                    .Include(p => p.User)
+                    .Include(p => p.ProviderServices)
+                        .ThenInclude(ps => ps.Service) //  Ensure Service is loaded
+                    .FirstOrDefaultAsync(p => p.Id == id); //  Simplified query
+
+                if (provider == null)
+                {
+                    return NotFound(new { message = "Provider not found" });
+                }
+
+                var providerDto = new GetProviderDto
+                {
+                    Username = provider.User?.UserName,  // ✅ Prevent NullReferenceException
+                    Email = provider.User?.Email,
+                    PhoneNumber = provider.User?.PhoneNumber,
+                    NationalId = provider.NationalId,
+                    Rating = provider.Rating,
+                    LicensePlate = provider.LicensePlate,
+                    Make = provider.Make,
+                    Model = provider.Model,
+                    IsAvailable = provider.IsAvailable,
+                };
+
+                return Ok(providerDto);
             }
-            return Ok(provider);
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+            }
         }
+
         [HttpPost]
         [Route("AddProvider")]
         public async Task<IActionResult> AddProvider([FromBody] ProviderDto model)
@@ -145,7 +155,7 @@ namespace VehicleServe.Controllers
 
             return Ok(new { Status = "Success", Message = "Provider created successfully!", ProviderId = provider.Id });
         }
-        [Authorize(Roles ="PROVIDER")]
+        [Authorize(Roles = "Provider")]
         [HttpPost("add-service")]
         public async Task<IActionResult> AddServiceToCurrentProvider(int serviceId)
         {
@@ -185,7 +195,7 @@ namespace VehicleServe.Controllers
 
             return Ok(new { Message = "Service added successfully." });
         }
-        [Authorize(Roles = "PROVIDER")]
+        [Authorize(Roles = "Provider")]
         [HttpPut("update-profile")]
         public async Task<IActionResult> UpdateProviderProfile([FromBody] UpdateProviderDto model)
         {
@@ -207,7 +217,7 @@ namespace VehicleServe.Controllers
 
             return Ok(new { Message = "Profile updated successfully." });
         }
-        [Authorize(Roles = "PROVIDER")]
+        [Authorize(Roles = "Provider")]
         [HttpPut("update-availability")]
         public async Task<IActionResult> UpdateAvailability(bool IsAvailable)
         {
@@ -226,7 +236,7 @@ namespace VehicleServe.Controllers
 
             return Ok(new { Message = "Availability updated successfully." });
         }
-        [Authorize(Roles = "PROVIDER")]
+        [Authorize(Roles = "Provider")]
         [HttpPut("update-location")]
         public async Task<IActionResult> UpdateLocation(LocatioDto dto)
         {
@@ -246,7 +256,7 @@ namespace VehicleServe.Controllers
 
             return Ok(new { Message = "Availability updated successfully." });
         }
-        [Authorize(Roles = "PROVIDER")]
+        [Authorize(Roles = "Provider")]
         [HttpDelete("remove-service/{serviceId}")]
         public async Task<IActionResult> RemoveServiceFromProvider(int serviceId)
         {
@@ -267,28 +277,37 @@ namespace VehicleServe.Controllers
         }
 
         [HttpGet("available-providers/{serviceId}")]
-        [Authorize(Roles = "CUSTOMER")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> GetAvailableProviders(int serviceId)
         {
-            var onlineProviderIds = OnlineUsersTracker.GetOnlineProviders();
-
             var availableProviders = await _appDbContext.Providers
-                .Where(p => p.IsAvailable && onlineProviderIds.Contains(p.Id) &&
-                            p.ProviderServices.Any(ps => ps.ServiceId == serviceId)) 
-                .Include(p => p.User)
-                .OrderByDescending(p => p.Rating) 
-                .Select(p => new
-                {
-                    ProviderId = p.Id,
-                    Username = p.User.UserName,
-                    Rating = p.Rating,
-                    Latitude = p.Latitude,
-                    Longitude = p.Longitude
-                })
-                .ToListAsync();
+    .Where(p => p.IsAvailable == true &&
+                p.ProviderServices.Any(ps => ps.ServiceId == serviceId))
+    .Include(p => p.User)  // Ensure User is included
+    .Select(p => new
+    {
+        ProviderId = p.Id,
+        Username = p.User.UserName,
+        Rating = p.Rating,
+        Latitude = p.Latitude,
+        Longitude = p.Longitude
+    })
+    .ToListAsync();
 
-            return Ok(availableProviders);
+            // Sort in memory
+            var sortedProviders = availableProviders.OrderByDescending(p => p.Rating).ToList();
+
+            if (sortedProviders == null || !sortedProviders.Any())
+            {
+                return NotFound("No providers found");
+            }
+
+            return Ok(sortedProviders);
+
         }
+
+
+
 
 
     }
