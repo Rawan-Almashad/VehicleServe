@@ -50,6 +50,30 @@ namespace VehicleServe.Controllers
 
             return Ok(provider);
         }
+        [HttpGet("all-providers")]
+        public async Task<IActionResult> GetAllProviders()
+        {
+            var providers = await _appDbContext.Providers
+                .Include(p => p.User)
+                .Select(p => new
+                {
+                    ProviderId = p.Id,
+                    Username = p.User.UserName,
+                    Email = p.User.Email,
+                    PhoneNumber = p.User.PhoneNumber,
+                    NationalId = p.NationalId,
+                    Rating = p.Rating,
+                    LicensePlate = p.LicensePlate,
+                    Make = p.Make,
+                    Model = p.Model,
+                    IsAvailable = p.IsAvailable,
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude
+                })
+                .ToListAsync();
+
+            return Ok(providers);
+        }
         [Authorize(Roles = "Provider")]
         [HttpGet("get-my-services")]
         public async Task<IActionResult> GetProviderServices()
@@ -96,7 +120,7 @@ namespace VehicleServe.Controllers
 
                 var providerDto = new GetProviderDto
                 {
-                    Username = provider.User?.UserName,  // ✅ Prevent NullReferenceException
+                    Username = provider.User?.UserName,  
                     Email = provider.User?.Email,
                     PhoneNumber = provider.User?.PhoneNumber,
                     NationalId = provider.NationalId,
@@ -174,8 +198,7 @@ namespace VehicleServe.Controllers
             {
                 return NotFound("Service not found.");
             }
-
-            
+ 
             var existingProviderService = await _appDbContext.ProviderServices
                 .FirstOrDefaultAsync(ps => ps.ProviderId == providerId && ps.ServiceId == serviceId);
             if (existingProviderService != null)
@@ -254,7 +277,7 @@ namespace VehicleServe.Controllers
 
             await _appDbContext.SaveChangesAsync();
 
-            return Ok(new { Message = "Availability updated successfully." });
+            return Ok(new { Message = "Location updated successfully." });
         }
         [Authorize(Roles = "Provider")]
         [HttpDelete("remove-service/{serviceId}")]
@@ -281,20 +304,18 @@ namespace VehicleServe.Controllers
         public async Task<IActionResult> GetAvailableProviders(int serviceId)
         {
             var availableProviders = await _appDbContext.Providers
-    .Where(p => p.IsAvailable == true &&
-                p.ProviderServices.Any(ps => ps.ServiceId == serviceId))
-    .Include(p => p.User)  // Ensure User is included
-    .Select(p => new
-    {
-        ProviderId = p.Id,
-        Username = p.User.UserName,
-        Rating = p.Rating,
-        Latitude = p.Latitude,
-        Longitude = p.Longitude
-    })
-    .ToListAsync();
-
-            // Sort in memory
+            .Where(p => p.IsAvailable == true &&
+            p.ProviderServices.Any(ps => ps.ServiceId == serviceId))
+           .Include(p => p.User)  // Ensure User is included
+           .Select(p => new
+           {
+             ProviderId = p.Id,
+             Username = p.User.UserName,
+             Rating = p.Rating,
+             Latitude = p.Latitude,
+             Longitude = p.Longitude
+           })
+           .ToListAsync();
             var sortedProviders = availableProviders.OrderByDescending(p => p.Rating).ToList();
 
             if (sortedProviders == null || !sortedProviders.Any())
@@ -305,8 +326,6 @@ namespace VehicleServe.Controllers
             return Ok(sortedProviders);
 
         }
-
-
 
 
 

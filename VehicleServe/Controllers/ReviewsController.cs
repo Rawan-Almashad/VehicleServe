@@ -19,7 +19,7 @@ namespace VehicleServe.Controllers
             _appDbContext = appDbContext;
         }
         [HttpPut("review/{serviceRequestId}")]
-        [Authorize(Roles = "CUSTOMER")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> AddReview(int serviceRequestId, [FromBody] AddReviewDto dto)
         {
             var customerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
