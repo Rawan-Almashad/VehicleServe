@@ -1,7 +1,6 @@
-Vehicle Service System 
+Vehicle Service System
 
 📌 Overview
-
 This project is a vehicle service system designed to connect customers with service providers.
 
 Customers can request services for their vehicles.
@@ -21,7 +20,6 @@ Entity Framework Core + SQL Server – database design and management
 ASP.NET Identity + JWT – authentication, authorization, and role-based access
 
 SignalR – real-time communication between customers and providers
-
 
 ⚙️ Features
 
@@ -50,7 +48,6 @@ Manage users (providers)
 Oversee services and system activity
 
 📖 Lessons Learned
-
 Working on this project gave me hands-on experience in:
 
 Designing secure and scalable backend systems
@@ -60,7 +57,6 @@ Implementing role-based authentication and authorization
 Using SignalR for real-time notifications
 
 👩‍💻 Author
-
 Rawan Almashad
 - [LinkedIn](https://www.linkedin.com/in/rawan-almashad-86b124261/)  
 - [GitHub](https://github.com/Rawan-Almashad)  
