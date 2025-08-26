@@ -59,6 +59,7 @@ Implementing role-based authentication and authorization
 Using SignalR for real-time notifications
 
 👩‍💻 Author
+
 Rawan Almashad
 - [LinkedIn](https://www.linkedin.com/in/rawan-almashad-86b124261/)  
 - [GitHub](https://github.com/Rawan-Almashad)  
